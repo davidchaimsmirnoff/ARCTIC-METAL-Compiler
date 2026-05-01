@@ -1,4 +1,4 @@
-# Megatron-MSL-Compiler
+# Arctic Metal Compiler
 
 A custom Metal Shading Language (MSL) compiler written in Objective-C.
 
