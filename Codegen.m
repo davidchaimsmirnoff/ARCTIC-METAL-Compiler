@@ -1,5 +1,13 @@
 
+
 #import "Codegen.h"
+
+// Variables that are Metal buffer parameters and need [id] indexing
+static NSSet *bufferParams(void) {
+    static NSSet *s = nil;
+    if (!s) s = [NSSet setWithObjects:@"a", @"b", @"c", @"d", nil];
+    return s;
+}
 
 @implementation MCodegen
 
@@ -13,7 +21,12 @@
     }
 
     if ([node isKindOfClass:[MVar class]]) {
-        return ((MVar *)node).name;
+        NSString *name = ((MVar *)node).name;
+        // Buffer pointer params must be indexed with [id] in Metal
+        if ([bufferParams() containsObject:name]) {
+            return [NSString stringWithFormat:@"%@[id]", name];
+        }
+        return name;
     }
 
     return @"";
@@ -35,3 +48,4 @@
 }
 
 @end
+

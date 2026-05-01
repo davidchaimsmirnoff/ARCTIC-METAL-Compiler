@@ -1,4 +1,3 @@
-
 #import "Parser.h"
 
 @interface MParser ()
@@ -9,11 +8,12 @@
 @implementation MParser
 
 - (id)peek {
-    if (self.pos >= self.tokens.count) return nil;
+    if (self.pos >= (int)self.tokens.count) return nil;
     return self.tokens[self.pos];
 }
 
 - (id)eat {
+    if (self.pos >= (int)self.tokens.count) return nil;
     return self.tokens[self.pos++];
 }
 
@@ -21,42 +21,58 @@
     self.tokens = tokens;
     self.pos = 0;
 
-    NSString *target = [self eat][@"value"];
-    [self eat]; // '='
+    NSDictionary *targetTok = [self eat];
+    NSString *target = targetTok[@"value"];
 
-    MBinOp *expr = [self expr];
+    [self eat]; // consume '='
 
-    MAssign *assign = [MAssign new];
-    assign.target = target;
-    assign.value = expr;
+    MNode *expr = [self expr];
 
+    MAssign *assign = [[MAssign alloc] initWithTarget:target value:expr];
     return assign;
 }
 
-- (MBinOp *)expr {
+// expr handles + and - (left-associative)
+- (MNode *)expr {
     MNode *left = [self term];
 
-    while ([self peek] && [[self peek][@"value"] isEqualToString:@"+"]) {
+    while ([self peek] != nil) {
+        NSString *val = [self peek][@"value"];
+        if (![val isEqualToString:@"+"] && ![val isEqualToString:@"-"]) break;
+
         NSString *op = [self eat][@"value"];
         MNode *right = [self term];
 
-        MBinOp *bin = [MBinOp new];
-        bin.left = left;
-        bin.op = op;
-        bin.right = right;
-
-        left = bin;
+        left = [[MBinOp alloc] initWithLeft:left op:op right:right];
     }
 
-    return (MBinOp *)left;
+    return left;
 }
 
-- (MVar *)term {
-    NSDictionary *tok = [self eat];
+// term handles * and /
+- (MNode *)term {
+    MNode *left = [self factor];
 
-    MVar *v = [MVar new];
-    v.name = tok[@"value"];
-    return v;
+    while ([self peek] != nil) {
+        NSString *val = [self peek][@"value"];
+        if (![val isEqualToString:@"*"] && ![val isEqualToString:@"/"]) break;
+
+        NSString *op = [self eat][@"value"];
+        MNode *right = [self factor];
+
+        left = [[MBinOp alloc] initWithLeft:left op:op right:right];
+    }
+
+    return left;
+}
+
+// factor: a single identifier or number token
+- (MNode *)factor {
+    NSDictionary *tok = [self eat];
+    if (!tok) return [[MVar alloc] initWithName:@"0"];
+
+    return [[MVar alloc] initWithName:tok[@"value"]];
 }
 
 @end
+
