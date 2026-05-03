@@ -3,7 +3,7 @@
  
 **A GPU compiler REPL that compiles a tiny expression language into Metal Shading Language (MSL) and runs it on the GPU.**
  
-Write `out = a + b`. Megatron lexes it, parses it into an AST, generates a Metal kernel, compiles it on the fly, and dispatches it to your GPU — all in one command.
+Write `out = a + b`. The Arctic Compiler lexes it, parses it into an AST, generates a Metal kernel, compiles it on the fly, and dispatches it to your GPU — all in one command.
  
 ---
  
@@ -89,7 +89,7 @@ clang -fobjc-arc \
 ## Usage
  
 ```
-🔥 Megatron GPU Compiler REPL v0.1
+🔥 Arctic GPU Compiler REPL v0.1
 Type 'help' for usage.
  
 megatron >
